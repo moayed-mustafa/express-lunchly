@@ -19,24 +19,35 @@ class Reservation {
   /** formatter for startAt */
 
   getformattedStartAt() {
-    return moment(this.startAt).format('MMMM Do YYYY, h:mm a');
+    return moment(this.startAt).format('DD MMMM YYYY, hh:mm a');
   }
 
   /** given a customer id, find their reservations. */
 
   static async getReservationsForCustomer(customerId) {
     const results = await db.query(
-          `SELECT id, 
-           customer_id AS "customerId", 
-           num_guests AS "numGuests", 
-           start_at AS "startAt", 
+          `SELECT id,
+           customer_id AS "customerId",
+           num_guests AS "numGuests",
+           start_at AS "startAt",
            notes AS "notes"
-         FROM reservations 
+         FROM reservations
          WHERE customer_id = $1`,
         [customerId]
     );
 
     return results.rows.map(row => new Reservation(row));
+  }
+
+
+  async save() {
+    console.log(this.customerId, this.numGuests, this.startAt, this.notes)
+     await db.query(`
+    INSERT INTO reservations (customer_id, start_at, num_guests, notes)
+    VALUES ($1, $2, $3, $4)
+    `, [this.customerId,this.startAt, this.numGuests, this.notes])
+
+
   }
 }
 
